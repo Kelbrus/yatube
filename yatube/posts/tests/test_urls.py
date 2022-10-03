@@ -7,10 +7,10 @@ from ..models import Group, Post
 
 User = get_user_model()
 
+
 class PostURLTests(TestCase):
     @classmethod
     def setUpClass(cls):
-
         super().setUpClass()
         cls.user_author = User.objects.create_user(username='Tester2000')
         cls.user = User.objects.create_user(username='simple_user')
