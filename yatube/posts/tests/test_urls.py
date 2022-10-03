@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
+from http import HTTPStatus
 
 from ..models import Group, Post
 
@@ -59,7 +60,7 @@ class PostURLTests(TestCase):
         for template, url in self.URLS_AND_TEMPLATES_FOR_ALL.items():
             with self.subTest(url=url):
                 response_guest = self.guest_client.get(url)
-                self.assertEqual(response_guest.status_code, 200)
+                self.assertEqual(response_guest.status_code, HTTPStatus.OK)
                 self.assertTemplateUsed(response_guest, template)
 
     def test_urls_unexists_at_desired_location_for_all_users(self):
@@ -67,20 +68,20 @@ class PostURLTests(TestCase):
         for url in self.URLS_UNEXISTING:
             with self.subTest(url=url):
                 response_guest = self.guest_client.get(url)
-                self.assertEqual(response_guest.status_code, 404)
+                self.assertEqual(response_guest.status_code, HTTPStatus.NOT_FOUND)
 
                 response_author = self.authorized_client.get(url)
-                self.assertEqual(response_author.status_code, 404)
+                self.assertEqual(response_author.status_code, HTTPStatus.NOT_FOUND)
 
                 response_not_author = self.authorized_client_but_not_author.get(url)
-                self.assertEqual(response_not_author.status_code, 404)
+                self.assertEqual(response_not_author.status_code, HTTPStatus.NOT_FOUND)
 
     def test_urls_and_templates_exists_at_desired_location_for_auth_not_author(self):
         '''Проверка страниц и шаблонов для авторизованных пользователей,не являющихся автором.'''
         for template, url in self.URLS_AND_TEMPLATES_FOR_NOT_AUTHOR.items():
             with self.subTest(url=url):
                 response_not_author = self.authorized_client_but_not_author.get(url)
-                self.assertEqual(response_not_author.status_code, 200)
+                self.assertEqual(response_not_author.status_code, HTTPStatus.OK)
                 self.assertTemplateUsed(response_not_author, template)
 
     def test_urls_and_templates_exists_at_desired_location_for_author(self):
@@ -88,7 +89,7 @@ class PostURLTests(TestCase):
         for template, url in self.URLS_AND_TEMPLATES_FOR_AUTHOR.items():
             with self.subTest(url=url):
                 response_author = self.authorized_client.get(url)
-                self.assertEqual(response_author.status_code, 200)
+                self.assertEqual(response_author.status_code, HTTPStatus.OK)
                 self.assertTemplateUsed(response_author, template)
 
     def test_redirect_urls_for_unauthorized_user(self):
@@ -96,7 +97,11 @@ class PostURLTests(TestCase):
         для гостевых пользователей с последующим редиректом.'''
         for url, redirect_url in self.URLS_REDIRECT_FOR_GUEST.items():
             with self.subTest(url=url):
-                response = self.guest_client.get(url, follow=True)
+                response_checking_status = self.guest_client.get(url)
+                self.assertEqual(
+                    response_checking_status.status_code, HTTPStatus.FOUND
+                )
+                response_redirect = self.guest_client.get(url, follow=True)
                 self.assertRedirects(
-                    response, redirect_url
+                    response_redirect, redirect_url
                 )
