@@ -76,3 +76,15 @@ class PostsCreateFormTests(TestCase):
         self.assertEqual(post.author, self.user_author)
         self.assertEqual(post.group_id, self.FORM_DATA['group'])
 
+    def test_guest_user_create_post(self):
+        """Проверка валидности формы для гостевого пользователя."""
+        posts_count = Post.objects.count()
+        response = self.guest_user.post(
+            reverse('posts:post_create'),
+            deta=self.FORM_DATA,
+            follow=True
+        )
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        redirect = reverse('login') + '?next=' + reverse('posts:post_create')
+        self.assertRedirects(response, redirect)
+        self.assertEqual(Post.objects.count(), posts_count)
