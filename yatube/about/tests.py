@@ -32,6 +32,6 @@ class AboutURLTests(TestCase):
                 self.assertEqual(response_guest.status_code, HTTPStatus.OK)
                 self.assertTemplateUsed(response_guest, template)
 
-                # response_authorized = self.authorized_client.get(url)
-                # self.assertEqual(response_authorized, HTTPStatus.OK)
-                # self.assertTemplateUsed(response_authorized, template)
+                response_authorized = self.authorized_client.get(url)
+                self.assertEqual(response_authorized, HTTPStatus.OK)
+                self.assertTemplateUsed(response_authorized, template)
