@@ -12,42 +12,42 @@ class PostURLTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user_author = User.objects.create_user(username="Tester2000")
-        cls.user = User.objects.create_user(username="simple_user")
+        cls.user_author = User.objects.create_user(username='Tester2000')
+        cls.user = User.objects.create_user(username='simple_user')
         cls.group = Group.objects.create(
-            title="Тестовая группа",
-            slug="test_slug",
-            description="Тестовое описание",
+            title='Тестовая группа',
+            slug='test_slug',
+            description='Тестовое описание',
         )
         cls.post = Post.objects.create(
-            text="Тестовый текст",
+            text='Тестовый текст',
             author=cls.user_author,
             group=cls.group,
         )
 
         cls.URLS_AND_TEMPLATES_FOR_ALL = {
-            "posts/group_list.html": "/group/test_slug/",
-            "posts/profile.html": "/profile/Tester2000/",
-            "posts/post_detail.html": f"/posts/{cls.post.id}/",
-            "posts/index.html": "/",
+            'posts/group_list.html': '/group/test_slug/',
+            'posts/profile.html': '/profile/Tester2000/',
+            'posts/post_detail.html': f'/posts/{cls.post.id}/',
+            'posts/index.html': '/',
         }
 
         cls.URLS_AND_TEMPLATES_FOR_NOT_AUTHOR = {
-            "posts/create_post.html": "/create/",
+            'posts/create_post.html': '/create/',
         }
 
         cls.URLS_AND_TEMPLATES_FOR_AUTHOR = {
-            "posts/create_post.html": "/edit/",
-            "posts/create_post.html": f"/posts/{cls.post.id}/edit/",
+            'posts/create_post.html': f'/posts/{cls.post.id}/edit/',
         }
 
         cls.URLS_UNEXISTING = [
-            "/unexisting_url/",
+            '/unexisting_url/',
         ]
 
         cls.URLS_REDIRECT_FOR_GUEST = {
-            f"/posts/{cls.post.id}/edit/": f"/auth/login/?next=/posts/{cls.post.id}/edit/",
-            "/create/": "/auth/login/?next=/create/",
+            f'/posts/{cls.post.id}/edit/':
+                f'/auth/login/?next=/posts/{cls.post.id}/edit/',
+            '/create/': '/auth/login/?next=/create/',
         }
 
     def setUp(self):
