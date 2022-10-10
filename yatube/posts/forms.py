@@ -9,4 +9,5 @@ class PostForm(forms.ModelForm):
         fields = (
             'text',
             'group',
+            'image',
         )

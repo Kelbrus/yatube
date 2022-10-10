@@ -70,7 +70,11 @@ def post_detail(request, post_id):
 @login_required
 def post_create(request):
 
-    form = PostForm(request.POST or None)
+    form = PostForm(
+        request.POST or None,
+        files=request.FILES or None,
+        # instance=post,
+    )
 
     if form.is_valid():
         create_post = form.save(commit=False)

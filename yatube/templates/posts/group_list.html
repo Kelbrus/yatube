@@ -1,5 +1,5 @@
-<!DOCTYPE html>
 {% extends 'base.html' %}
+{% load thumbnail %}
 {% block title %}
 {{ group.title }}
 {% endblock title %}
@@ -15,6 +15,9 @@
       Дата публикации: {{ post.pub_date|date:'d E Y' }}
     </li>
   </ul>
+    {% thumbnail post.image "960x339" crop="center" upscale=True as im %}
+      <img class="card-img my-2" src="{{ im.url }}">
+    {% endthumbnail %}
     <p>{{ post.text|linebreaks }}</p>
   {% if not forloop.last %}
     <hr>

@@ -1,10 +1,6 @@
-from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from ..models import Group, Post
-
-
-User = get_user_model()
+from ..models import Group, Post, User
 
 
 class PostModelTest(TestCase):
@@ -17,12 +13,16 @@ class PostModelTest(TestCase):
             slug='test_slug',
             description='Тестовое описание',
         )
-        cls.post = Post.objects.create(text='Тестовая запись', author=cls.user)
+        cls.post = Post.objects.create(
+            text='Тестовая запись, содержащая больше пятнадцати символов',
+            author=cls.user
+        )
 
     def test_models_have_correct_objects_name(self):
         """Проверяем, что у моделей корректно работает __str__."""
+        SYMBOLS_COUNT = 15
         post = PostModelTest.post
-        expected_object_name = post.text
+        expected_object_name = post.text[:SYMBOLS_COUNT]
         self.assertEqual(expected_object_name, str(post))
 
         group = PostModelTest.group
