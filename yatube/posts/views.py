@@ -73,7 +73,6 @@ def post_create(request):
     form = PostForm(
         request.POST or None,
         files=request.FILES or None,
-        # instance=post,
     )
 
     if form.is_valid():
@@ -93,7 +92,10 @@ def post_edit(request, post_id):
 
     if request.user != edit_post.author:
         return redirect('posts:post_detail', post_id)
-    form = PostForm(request.POST or None, instance=edit_post)
+    form = PostForm(
+        request.POST or None,
+        instance=edit_post,
+    )
     if form.is_valid():
         form.save()
         return redirect('posts:post_detail', post_id)
