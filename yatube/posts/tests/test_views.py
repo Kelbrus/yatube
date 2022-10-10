@@ -23,7 +23,7 @@ class PostsTestViews(TestCase):
         )
 
         cls.TEMPLATE_PAGES_NAME_FOR_ALL = {
-            'posts/index.html': reverse('posts:posts_list'),
+            'posts/index.html': reverse('posts:index'),
             'posts/group_list.html': (
                 reverse(
                     'posts:group_list', kwargs={'slug': f'{cls.group.slug}'}
@@ -84,14 +84,14 @@ class PostsTestViews(TestCase):
     def test_index_page_show_correct_context(self):
         """Шаблон index.html сформирован с правильным контекстом."""
         response_not_author = self.authorized_client_but_not_author.get(
-            reverse('posts:posts_list')
+            reverse('posts:index')
         )
         self.subtest_for_posts(response_not_author.context['page_obj'][0])
 
-        response_guest = self.guest_client.get(reverse('posts:posts_list'))
+        response_guest = self.guest_client.get(reverse('posts:index'))
         self.subtest_for_posts(response_guest.context['page_obj'][0])
 
-        response_author = self.guest_client.get(reverse('posts:posts_list'))
+        response_author = self.guest_client.get(reverse('posts:index'))
         self.subtest_for_posts(response_author.context['page_obj'][0])
 
     def test_group_page_show_correct_context(self):
@@ -201,7 +201,7 @@ class PaginatorViewsTest(TestCase):
         first_page_count = 10
         second_page_count = 3
         pages = [
-            reverse('posts:posts_list'),
+            reverse('posts:index'),
             reverse('posts:group_list', kwargs={'slug': self.group.slug}),
             reverse('posts:profile', kwargs={'username': self.user.username}),
         ]
