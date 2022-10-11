@@ -67,6 +67,9 @@ class PostsTestViews(TestCase):
 
         cls.TEMPLATE_PAGES_NAME_FOR_AUTH_NOT_AUTHOR = {
             'posts/create_post.html': reverse('posts:post_create'),
+            'posts/post_detail.html': reverse(
+                'posts:add_comment', kwargs={'post_id': f'{cls.post.id}'}
+            )
         }
 
         cls.TEMPLATE_PAGES_NAME_FOR_AUTHOR = {
@@ -76,6 +79,11 @@ class PostsTestViews(TestCase):
                 )
             ),
         }
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def setUp(self):
         self.guest_client = Client()

@@ -7,8 +7,8 @@ from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from http import HTTPStatus
 
-from ..forms import PostForm
-from ..models import Group, Post, User
+from ..forms import CommentForm, PostForm
+from ..models import Comment, Group, Post, User
 
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
@@ -20,6 +20,7 @@ class PostsCreateFormTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user_author = User.objects.create_user(username='Tester2000')
+        cls.user = User.objects.create_user('simple_user')
         cls.group = Group.objects.create(
             title='Тестовая группа',
             slug='test_slug',
@@ -53,6 +54,8 @@ class PostsCreateFormTests(TestCase):
 
     def setUp(self):
         self.guest_user = Client()
+        self.authorized_client_not_author = Client()
+        self.authorized_client_not_author.force_login(self.user)
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user_author)
 
@@ -103,3 +106,54 @@ class PostsCreateFormTests(TestCase):
         redirect = reverse('login') + '?next=' + reverse('posts:post_create')
         self.assertRedirects(response, redirect)
         self.assertEqual(Post.objects.count(), self.posts_count)
+
+    def test_auth_user_comment_post(self):
+        """Проверка валидности формы комментария
+        для авторизованного пользователя.
+        """
+        self.post = Post.objects.create(
+            text='Тестовая запись',
+            author=self.user_author,
+        )
+        self.comments_count = Comment.objects.count()
+        self.comment = Comment.objects.create(
+            text='Тестовый комментарий',
+            author=self.user,
+            post=self.post
+        )
+        response = self.authorized_client_not_author.post(
+            reverse(
+                'posts:post_detail',
+                kwargs={'post_id': self.post.id}
+            ),
+            follow=True,
+        )
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertEqual(Comment.objects.count(), self.comments_count + 1)
+        comment = Comment.objects.latest('id')
+        self.assertEqual(comment.text, self.comment.text)
+        self.assertEqual(comment.author, self.user)
+
+    def test_guest_user_cant_comment_post(self):
+        """Проверка невалидности формы комментария
+        для гостевого пользователя.
+        """
+        self.post = Post.objects.create(
+            text='Тестовая запись',
+            author=self.user_author,
+        )
+        self.comments_count = Comment.objects.count()
+        response = self.guest_user.post(
+            reverse(
+                'posts:add_comment',
+                kwargs={'post_id': self.post.id},
+            ),
+            follow=True
+        )
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        redirect = reverse('login') + '?next=' + reverse(
+            'posts:add_comment',
+            kwargs={'post_id': self.post.id}
+        )
+        self.assertRedirects(response, redirect)
+        self.assertEqual(Comment.objects.count(), self.comments_count)
