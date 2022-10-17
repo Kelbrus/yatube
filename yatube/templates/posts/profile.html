@@ -8,6 +8,25 @@
   {% endif %}Профайл пользователя
 {% endblock title %}
 {% block content %}
+<div class="mb-5">
+  <h1>Все посты пользователя {{ author.get_full_name }}</h1>
+  <h3>Всего постов: {{ posts_count }}</h3>
+  {% if following %}
+    <a
+      class="btn btn-lg btn-light"
+      href="{% url 'posts:profile_unfollow' author.username %}" role="button"
+    >
+      Отписаться
+    </a>
+  {% else %}
+      <a
+        class="btn btn-lg btn-primary"
+        href="{% url 'posts:profile_follow' author.username %}" role="button"
+      >
+        Подписаться
+      </a>
+   {% endif %}
+</div>
 <h1>Все посты пользователя
   {% if author.get_full_name %}
     {{ author.get_full_name }}

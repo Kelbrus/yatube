@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.cache import cache_page
 
 from .forms import CommentForm, PostForm
-from .models import Group, Post
+from .models import Follow, Group, Post
 
 
 DISPLAYED_COUNT = 10
@@ -122,3 +122,36 @@ def add_comment(request, post_id):
         comment.post = post
         comment.save()
     return redirect('posts:post_detail', post_id=post_id)
+
+
+@login_required
+def follow_index(request):
+    posts = Post.objects.filter(author__following__user=request.user)
+    page_obj = makes_paginator(request, posts)
+    context = {'page_obj': page_obj}
+    return render(request, 'posts/follow.html', context)
+
+
+@login_required
+def profile_follow(request, username):
+    author = get_object_or_404(User, username=username)
+    if request.user.username == username:
+        following = redirect('posts:index')
+        return following
+    if Follow.objects.filter(user=request.user, author=author).exists():
+        following = redirect('posts:index')
+        return following
+    following = Follow.objects.get_or_create(user=request.user, author=author)
+    context = {'following': following}
+    return redirect('posts:profile', context, author)
+
+
+@login_required
+def profile_unfollow(request, username):
+    user_follower = get_object_or_404(
+        Follow,
+        user=request.user,
+        author__username=username,
+    )
+    user_follower.delete
+    return redirect('posts:profile', username)
