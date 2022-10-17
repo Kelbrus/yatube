@@ -55,8 +55,11 @@ def profile(request, username):
     post_list = Post.objects.filter(author=author)
     page_obj = makes_paginator(request, post_list)
     template = 'posts/profile.html'
-    following = Follow.objects.filter(user=request.user, author=author).exists()
-    context = {'page_obj': page_obj, 'author': author, 'following': following}
+    if request.user.is_authenticated:
+        following = Follow.objects.filter(user=request.user, author=author).exists()
+        context = {'page_obj': page_obj, 'author': author, 'following': following}
+    else:
+        context = {'page_obj': page_obj, 'author': author}
     return render(request, template, context)
 
 
@@ -136,8 +139,9 @@ def follow_index(request):
 @login_required
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
-    following = Follow.objects.filter(user=request.user, author=author).exists()
-    if following:
+    if request.user.username == author.username:
+        return redirect('posts:index')
+    elif Follow.objects.filter(user=request.user, author=author).exists():
         return redirect('posts:index')
     else:
         Follow.objects.get_or_create(user=request.user, author=author)
