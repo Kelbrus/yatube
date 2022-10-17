@@ -55,7 +55,8 @@ def profile(request, username):
     post_list = Post.objects.filter(author=author)
     page_obj = makes_paginator(request, post_list)
     template = 'posts/profile.html'
-    context = {'page_obj': page_obj, 'author': author}
+    following = Follow.objects.filter(user=request.user, author=author).exists()
+    context = {'page_obj': page_obj, 'author': author, 'following': following}
     return render(request, template, context)
 
 
@@ -135,23 +136,16 @@ def follow_index(request):
 @login_required
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
-    if request.user.username == username:
-        following = redirect('posts:index')
-        return following
-    if Follow.objects.filter(user=request.user, author=author).exists():
-        following = redirect('posts:index')
-        return following
-    following = Follow.objects.get_or_create(user=request.user, author=author)
-    context = {'following': following}
-    return redirect('posts:profile', context, author)
+    following = Follow.objects.filter(user=request.user, author=author).exists()
+    if following:
+        return redirect('posts:index')
+    else:
+        Follow.objects.get_or_create(user=request.user, author=author)
+        return redirect('posts:profile', author)
 
 
 @login_required
 def profile_unfollow(request, username):
-    user_follower = get_object_or_404(
-        Follow,
-        user=request.user,
-        author__username=username,
-    )
-    user_follower.delete
-    return redirect('posts:profile', username)
+    author = get_object_or_404(User, username=username)
+    Follow.objects.filter(user=request.user, author=author).delete()
+    return redirect('posts:profile', author)
