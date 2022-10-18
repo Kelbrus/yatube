@@ -44,11 +44,9 @@ class PostsTestViews(TestCase):
             author=cls.user_author,
             group=cls.group,
             image=cls.uploaded,
-
         )
 
         cls.TEMPLATE_PAGES_NAME_FOR_ALL = {
-            'posts/index.html': reverse('posts:index'),
             'posts/group_list.html': (
                 reverse(
                     'posts:group_list', kwargs={'slug': f'{cls.group.slug}'}
@@ -81,12 +79,14 @@ class PostsTestViews(TestCase):
             ),
         }
 
+
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def setUp(self):
+        cache.clear()
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user_author)
@@ -102,10 +102,11 @@ class PostsTestViews(TestCase):
 
     def test_pages_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
+
         for template, reverse_name in self.TEMPLATE_PAGES_NAME_FOR_ALL.items():
             with self.subTest(reverse_name=reverse_name):
-                # response_guest = self.guest_client.get(reverse_name)
-                # self.assertTemplateUsed(response_guest, template)
+                response_guest = self.guest_client.get(reverse_name)
+                self.assertTemplateUsed(response_guest, template)
 
                 response_not_author = (
                     self.authorized_client_but_not_author.get(reverse_name)
@@ -119,12 +120,6 @@ class PostsTestViews(TestCase):
         """Шаблон index.html сформирован с правильным контекстом."""
         response = self.authorized_client.get(reverse('posts:index'))
         self.subtest_for_posts(response.context['page_obj'][0])
-        #
-        # response_not_author = self.authorized_client_but_not_author.get(reverse('posts:index'))
-        # self.subtest_for_posts(response_not_author.context())
-        #
-        # # response_guest = self.guest_client.get(reverse('posts:index'))
-        # # self.subtest_for_posts(response_guest.content['page_obj'][0])
 
     def test_index_page_cache(self):
         """Шаблон index.html кэшируется на 20 секунд
@@ -252,7 +247,6 @@ class PaginatorViewsTest(TestCase):
         first_page_count = 10
         second_page_count = 3
         pages = [
-            reverse('posts:index'),
             reverse('posts:group_list', kwargs={'slug': self.group.slug}),
             reverse('posts:profile', kwargs={'username': self.user.username}),
         ]
