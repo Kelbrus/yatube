@@ -12,6 +12,11 @@ from ..models import Group, Post, User
 
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
+TEMP_CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
 
 
 @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
@@ -79,7 +84,6 @@ class PostsTestViews(TestCase):
             ),
         }
 
-
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
@@ -121,9 +125,10 @@ class PostsTestViews(TestCase):
         response = self.authorized_client.get(reverse('posts:index'))
         self.subtest_for_posts(response.context['page_obj'][0])
 
+    @override_settings(CACHES=TEMP_CACHES)
     def test_index_page_cache(self):
-        """Шаблон index.html кэшируется на 20 секунд
-         и принудительно удаляется.
+        """Шаблон index.html кэшируется
+         и принудительно очищается.
          """
         post = Post.objects.create(
             text='Тестируем кэширование',

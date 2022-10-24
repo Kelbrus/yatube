@@ -7,14 +7,22 @@ from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from http import HTTPStatus
 
-from ..forms import CommentForm, PostForm
+from ..forms import PostForm
 from ..models import Comment, Group, Post, User
 
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
+TEMP_CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
 
 
-@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
+@override_settings(
+    MEDIA_ROOT=TEMP_MEDIA_ROOT,
+    CACHES=TEMP_CACHES
+)
 class PostsCreateFormTests(TestCase):
     @classmethod
     def setUpClass(cls):

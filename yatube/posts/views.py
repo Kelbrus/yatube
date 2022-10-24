@@ -56,8 +56,15 @@ def profile(request, username):
     page_obj = makes_paginator(request, post_list)
     template = 'posts/profile.html'
     if request.user.is_authenticated:
-        following = Follow.objects.filter(user=request.user, author=author).exists()
-        context = {'page_obj': page_obj, 'author': author, 'following': following}
+        following = Follow.objects.filter(
+            user=request.user,
+            author=author
+        ).exists()
+        context = {
+            'page_obj': page_obj,
+            'author': author,
+            'following': following
+        }
     else:
         context = {'page_obj': page_obj, 'author': author}
     return render(request, template, context)
@@ -68,7 +75,7 @@ def post_detail(request, post_id):
     post = get_object_or_404(Post, id=post_id)
 
     posts_count = Post.objects.filter(author=post.author).count()
-    form = CommentForm
+    form = CommentForm(request.POST or None)
     comments = post.comments.filter()
     template = 'posts/post_detail.html'
     context = {'post': post,
